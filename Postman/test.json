@@ -1,0 +1,248 @@
+{
+  "info": {
+    "name": "Explore With Me — Stats Service",
+    "description": "Коллекция для тестирования сервиса статистики (этап 1). Базовый URL: http://localhost:9090",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "POST /hit — сохранить информацию о запросе",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"app\": \"ewm-main-service\",\n    \"uri\": \"/events/1\",\n    \"ip\": \"192.168.0.1\",\n    \"timestamp\": \"2025-03-03 12:00:00\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/hit",
+          "host": ["{{baseUrl}}"],
+          "path": ["hit"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /stats — статистика за период (без фильтрации)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Ответ — массив объектов ViewStats\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    if (jsonData.length > 0) {",
+              "        pm.expect(jsonData[0]).to.have.all.keys('app', 'uri', 'hits');",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/stats?start=2025-01-01 00:00:00&end=2025-12-31 23:59:59",
+          "host": ["{{baseUrl}}"],
+          "path": ["stats"],
+          "query": [
+            {
+              "key": "start",
+              "value": "2025-01-01 00:00:00"
+            },
+            {
+              "key": "end",
+              "value": "2025-12-31 23:59:59"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /stats — с фильтром по uri",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Ответ содержит только запрошенные uri\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    jsonData.forEach(item => {",
+              "        pm.expect(item.uri).to.be.oneOf(['/events/1', '/events/2']);",
+              "    });",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/stats?start=2025-01-01 00:00:00&end=2025-12-31 23:59:59&uris=/events/1&uris=/events/2",
+          "host": ["{{baseUrl}}"],
+          "path": ["stats"],
+          "query": [
+            {
+              "key": "start",
+              "value": "2025-01-01 00:00:00"
+            },
+            {
+              "key": "end",
+              "value": "2025-12-31 23:59:59"
+            },
+            {
+              "key": "uris",
+              "value": "/events/1"
+            },
+            {
+              "key": "uris",
+              "value": "/events/2"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /stats — с уникальными ip",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/stats?start=2025-01-01 00:00:00&end=2025-12-31 23:59:59&unique=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["stats"],
+          "query": [
+            {
+              "key": "start",
+              "value": "2025-01-01 00:00:00"
+            },
+            {
+              "key": "end",
+              "value": "2025-12-31 23:59:59"
+            },
+            {
+              "key": "unique",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /stats — ошибка: отсутствует start",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус 400 Bad Request\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/stats?end=2025-12-31 23:59:59",
+          "host": ["{{baseUrl}}"],
+          "path": ["stats"],
+          "query": [
+            {
+              "key": "end",
+              "value": "2025-12-31 23:59:59"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /stats — ошибка: start позже end",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус 400 Bad Request\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/stats?start=2025-12-31 23:59:59&end=2025-01-01 00:00:00",
+          "host": ["{{baseUrl}}"],
+          "path": ["stats"],
+          "query": [
+            {
+              "key": "start",
+              "value": "2025-12-31 23:59:59"
+            },
+            {
+              "key": "end",
+              "value": "2025-01-01 00:00:00"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9090",
+      "type": "string"
+    }
+  ]
+}
