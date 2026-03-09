@@ -21,7 +21,7 @@ public class AppConfig implements WebMvcConfigurer {
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
         return builder -> {
             builder.serializers(new LocalDateTimeSerializer(DATE_TIME_FORMATTER));
-            //builder.serializers(new LocalDateSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            builder.serializers(new LocalDateSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         };
     }
 
