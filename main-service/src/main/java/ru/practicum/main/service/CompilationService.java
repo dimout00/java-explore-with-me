@@ -8,7 +8,6 @@ import ru.practicum.main.dto.*;
 import ru.practicum.main.exception.NotFoundException;
 import ru.practicum.main.exception.ValidationException;
 import ru.practicum.main.mapper.CompilationMapper;
-import ru.practicum.main.mapper.EventMapper;
 import ru.practicum.main.model.Compilation;
 import ru.practicum.main.model.Event;
 import ru.practicum.main.repository.CompilationRepository;
