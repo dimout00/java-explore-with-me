@@ -38,6 +38,16 @@ public class StatsClient {
         }
     }
 
+    public void hit(String app, String uri, String ip, LocalDateTime timestamp) {
+        EndpointHit hit = EndpointHit.builder()
+                .app(app)
+                .uri(uri)
+                .ip(ip)
+                .timestamp(timestamp)
+                .build();
+        this.hit(hit);
+    }
+
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(serverUrl + "/stats")
                 .queryParam("start", start.format(FORMATTER))

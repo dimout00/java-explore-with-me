@@ -41,9 +41,7 @@ public class EventService {
         Category category = categoryRepository.findById(dto.getCategory())
                 .orElseThrow(() -> new NotFoundException("Category with id=" + dto.getCategory() + " was not found"));
 
-        if (dto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Field: eventDate. Error: должно содержать дату, которая еще не наступила. Value: " + dto.getEventDate());
-        }
+        validateEventDate(dto.getEventDate());
 
         Event event = EventMapper.toEvent(dto, category, initiator);
         event.setCreatedOn(LocalDateTime.now());
@@ -81,8 +79,8 @@ public class EventService {
         if (event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("Only pending or canceled events can be changed");
         }
-        if (request.getEventDate() != null && request.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Event date must be at least 2 hours later");
+        if (request.getEventDate() != null) {
+            validateEventDate(request.getEventDate());
         }
 
         updateEventFields(event, request);
@@ -131,6 +129,10 @@ public class EventService {
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest request) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+
+        if (request.getEventDate() != null) {
+            validateEventDate(request.getEventDate());
+        }
 
         updateEventFields(event, request);
 
@@ -217,10 +219,25 @@ public class EventService {
         return dtos;
     }
 
+    @Transactional
     public EventFullDto getPublicEventById(Long id, String remoteIp) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+
+        // Отправляем хит в статистику для учёта просмотра
+        try {
+            statsClient.hit("main-service", "/events/" + id, remoteIp, LocalDateTime.now());
+        } catch (Exception e) {
+            log.warn("Failed to send hit to stats-server", e);
+        }
+
         return enrichEventFull(event);
+    }
+
+    private void validateEventDate(LocalDateTime eventDate) {
+        if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
+            throw new ConflictException("Event date must be at least 2 hours later");
+        }
     }
 
     private void updateEventFields(Event event, UpdateEventUserRequest request) {

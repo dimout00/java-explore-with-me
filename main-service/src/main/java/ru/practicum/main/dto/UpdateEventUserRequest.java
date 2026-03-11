@@ -15,25 +15,28 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateEventUserRequest {
-    @Size(min = 20, max = 2000)
+    @Size(min = 20, max = 2000, message = "Annotation length must be between 20 and 2000")
     private String annotation;
+
     private Long category;
 
-    @Size(min = 20, max = 7000)
+    @Size(min = 20, max = 7000, message = "Description length must be between 20 and 7000")
     private String description;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
 
     private Location location;
+
     private Boolean paid;
 
-    @PositiveOrZero
+    @PositiveOrZero(message = "Participant limit must be zero or positive")
     private Integer participantLimit;
 
     private Boolean requestModeration;
-    private String stateAction; // SEND_TO_REVIEW, CANCEL_REVIEW
 
-    @Size(min = 3, max = 120)
+    @Size(min = 3, max = 120, message = "Title length must be between 3 and 120")
     private String title;
+
+    private String stateAction; // "SEND_TO_REVIEW" or "CANCEL_REVIEW"
 }
