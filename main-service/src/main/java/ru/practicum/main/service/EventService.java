@@ -236,7 +236,7 @@ public class EventService {
 
     private void validateEventDate(LocalDateTime eventDate) {
         if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Event date must be at least 2 hours later");
+            throw new ValidationException("Event date must be at least 2 hours later");
         }
     }
 

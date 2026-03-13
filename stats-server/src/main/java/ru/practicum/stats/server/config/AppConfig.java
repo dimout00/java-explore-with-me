@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 @Configuration
 public class AppConfig implements WebMvcConfigurer {
 
-    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
     @Bean

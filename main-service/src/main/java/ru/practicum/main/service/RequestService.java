@@ -56,7 +56,7 @@ public class RequestService {
             throw new ConflictException("Request already exists");
         }
 
-        int participantLimit = event.getParticipantLimit(); // примитив
+        int participantLimit = event.getParticipantLimit();
         if (participantLimit > 0) {
             Long confirmed = requestRepository.countConfirmedRequestsByEventId(eventId);
             long confirmedCount = confirmed != null ? confirmed : 0L;
@@ -66,8 +66,7 @@ public class RequestService {
             }
         }
 
-        boolean requestModeration = event.isRequestModeration(); // примитив
-
+        boolean requestModeration = event.isRequestModeration();
         RequestStatus status = requestModeration && participantLimit != 0 ? RequestStatus.PENDING : RequestStatus.CONFIRMED;
 
         Request request = Request.builder()
@@ -77,7 +76,12 @@ public class RequestService {
                 .status(status)
                 .build();
         request = requestRepository.save(request);
-        log.info("Request created: id={}, status={}", request.getId(), request.getStatus());
+
+        requestRepository.flush();
+        request = requestRepository.findById(request.getId())
+                .orElseThrow(() -> new RuntimeException("Failed to reload request"));
+
+        log.info("Request created: id={}, status={}, created={}", request.getId(), request.getStatus(), request.getCreated());
         return RequestMapper.toParticipationRequestDto(request);
     }
 
