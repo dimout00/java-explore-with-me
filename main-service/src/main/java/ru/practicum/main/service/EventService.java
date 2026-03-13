@@ -231,6 +231,9 @@ public class EventService {
             log.warn("Failed to send hit to stats-server", e);
         }
 
+        try {
+            Thread.sleep(100); // 100 мс
+        } catch (InterruptedException ignored) {}
         return enrichEventFull(event);
     }
 
