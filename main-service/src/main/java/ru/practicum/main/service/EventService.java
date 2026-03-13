@@ -233,7 +233,9 @@ public class EventService {
 
         try {
             Thread.sleep(100); // 100 мс
-        } catch (InterruptedException ignored) {}
+        } catch (InterruptedException ignored) {
+            ;
+        }
         return enrichEventFull(event);
     }
 
