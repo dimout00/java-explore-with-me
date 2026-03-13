@@ -234,7 +234,9 @@ public class EventService {
         // Увеличенная задержка для гарантии сохранения хита в БД
         try {
             Thread.sleep(500); // 500 мс
-        } catch (InterruptedException ignored) {}
+        } catch (InterruptedException ignored) {
+            ;
+        }
 
         return enrichEventFull(event);
     }
