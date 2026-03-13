@@ -231,11 +231,11 @@ public class EventService {
             log.warn("Failed to send hit to stats-server", e);
         }
 
+        // Увеличенная задержка для гарантии сохранения хита в БД
         try {
-            Thread.sleep(100); // 100 мс
-        } catch (InterruptedException ignored) {
-            ;
-        }
+            Thread.sleep(500); // 500 мс
+        } catch (InterruptedException ignored) {}
+
         return enrichEventFull(event);
     }
 
@@ -298,18 +298,27 @@ public class EventService {
         List<String> uris = events.stream()
                 .map(e -> "/events/" + e.getId())
                 .collect(Collectors.toList());
-        LocalDateTime start = events.stream().map(Event::getCreatedOn).min(LocalDateTime::compareTo).orElse(LocalDateTime.now().minusYears(1));
+        LocalDateTime start = events.stream()
+                .map(Event::getCreatedOn)
+                .min(LocalDateTime::compareTo)
+                .orElse(LocalDateTime.now().minusYears(1));
         LocalDateTime end = LocalDateTime.now().plusYears(1);
+
+        log.debug("Requesting views for uris: {}, start: {}, end: {}", uris, start, end);
+
         try {
             List<ViewStats> viewStats = statsClient.getStats(start, end, uris, false);
+            log.debug("Received viewStats: {}", viewStats);
+
             Map<Long, Long> viewsMap = new HashMap<>();
             for (ViewStats vs : viewStats) {
                 String uri = vs.getUri();
                 try {
                     Long id = Long.parseLong(uri.substring(uri.lastIndexOf('/') + 1));
                     viewsMap.put(id, vs.getHits());
+                    log.debug("Mapped uri {} to id {} with hits {}", uri, id, vs.getHits());
                 } catch (Exception ex) {
-                    log.warn("Failed to parse uri: {}", uri);
+                    log.warn("Failed to parse uri: {}", uri, ex);
                 }
             }
             return viewsMap;
