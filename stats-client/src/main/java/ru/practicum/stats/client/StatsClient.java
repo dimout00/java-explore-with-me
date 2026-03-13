@@ -32,10 +32,14 @@ public class StatsClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<EndpointHit> entity = new HttpEntity<>(hit, headers);
         try {
-            rest.postForEntity(url, entity, Void.class);
-            log.debug("Hit sent: {}", hit);
+            ResponseEntity<Void> response = rest.postForEntity(url, entity, Void.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.debug("Hit sent successfully: {}", hit);
+            } else {
+                log.error("Failed to send hit, status: {}", response.getStatusCode());
+            }
         } catch (Exception e) {
-            log.error("Ошибка при сохранении статистики: {}", e.getMessage());
+            log.error("Ошибка при сохранении статистики: {}", e.getMessage(), e);
         }
     }
 
@@ -72,10 +76,15 @@ public class StatsClient {
                     null,
                     new ParameterizedTypeReference<>() {}
             );
-            log.debug("Stats response: {}", response.getBody());
-            return response.getBody();
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.debug("Stats response: {}", response.getBody());
+                return response.getBody();
+            } else {
+                log.error("Failed to get stats, status: {}", response.getStatusCode());
+                return List.of();
+            }
         } catch (Exception e) {
-            log.error("Ошибка при получении статистики: {}", e.getMessage());
+            log.error("Ошибка при получении статистики: {}", e.getMessage(), e);
             return List.of();
         }
     }

@@ -1,6 +1,7 @@
 package ru.practicum.stats.server.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.stats.dto.EndpointHit;
 import ru.practicum.stats.dto.ViewStats;
@@ -12,10 +13,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StatsService {
     private final StatsRepository repository;
 
     public void saveHit(EndpointHit hit) {
+        log.info("Saving hit: app={}, uri={}, ip={}, timestamp={}",
+                hit.getApp(), hit.getUri(), hit.getIp(), hit.getTimestamp());
         HitEntity entity = HitEntity.builder()
                 .app(hit.getApp())
                 .uri(hit.getUri())
@@ -23,6 +27,7 @@ public class StatsService {
                 .timestamp(hit.getTimestamp())
                 .build();
         repository.save(entity);
+        log.debug("Hit saved with id: {}", entity.getId());
     }
 
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
