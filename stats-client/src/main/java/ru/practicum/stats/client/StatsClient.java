@@ -19,7 +19,7 @@ import java.util.List;
 public class StatsClient {
     private final RestTemplate rest;
     private final String serverUrl;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public StatsClient(@Value("${stats-server.url:http://localhost:9090}") String serverUrl) {
         this.serverUrl = serverUrl;
@@ -33,6 +33,7 @@ public class StatsClient {
         HttpEntity<EndpointHit> entity = new HttpEntity<>(hit, headers);
         try {
             rest.postForEntity(url, entity, Void.class);
+            log.debug("Hit sent successfully: {}", hit);
         } catch (Exception e) {
             log.error("Ошибка при сохранении статистики: {}", e.getMessage());
         }
@@ -62,6 +63,7 @@ public class StatsClient {
         }
 
         String url = builder.encode().toUriString();
+        log.debug("Requesting stats from URL: {}", url);
 
         try {
             ResponseEntity<List<ViewStats>> response = rest.exchange(
@@ -70,6 +72,7 @@ public class StatsClient {
                     null,
                     new ParameterizedTypeReference<>() {}
             );
+            log.debug("Stats response: {}", response.getBody());
             return response.getBody();
         } catch (Exception e) {
             log.error("Ошибка при получении статистики: {}", e.getMessage());
