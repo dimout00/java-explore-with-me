@@ -233,7 +233,7 @@ public class EventService {
 
         // Увеличенная задержка для гарантии сохранения хита в БД
         try {
-            Thread.sleep(500); // 500 мс
+            Thread.sleep(1000); // 1000 мс
         } catch (InterruptedException ignored) {
             ;
         }
