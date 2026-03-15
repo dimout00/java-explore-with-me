@@ -54,6 +54,11 @@ public class StatsClient {
     }
 
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+        if (start == null || end == null) {
+            log.error("getStats called with null start or end: start={}, end={}", start, end);
+            return List.of();
+        }
+
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(serverUrl + "/stats")
                 .queryParam("start", start.format(FORMATTER))
                 .queryParam("end", end.format(FORMATTER));
