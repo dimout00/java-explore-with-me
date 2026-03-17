@@ -222,12 +222,6 @@ public class EventService {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
-        try {
-            statsClient.hit(Constants.APP_NAME, "/events/" + id, remoteIp, LocalDateTime.now());
-        } catch (Exception e) {
-            log.warn("Failed to send hit to stats-server", e);
-        }
-
         return enrichEventFull(event);
     }
 
