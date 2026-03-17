@@ -13,6 +13,7 @@ import ru.practicum.main.exception.ValidationException;
 import ru.practicum.main.mapper.EventMapper;
 import ru.practicum.main.model.*;
 import ru.practicum.main.repository.*;
+import ru.practicum.main.util.Constants;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.ViewStats;
 
@@ -160,7 +161,17 @@ public class EventService {
 
     public List<EventShortDto> getPublicEvents(String text, List<Long> categories, Boolean paid,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                               Boolean onlyAvailable, String sort, int from, int size) {
+                                               Boolean onlyAvailable, String sort, int from, int size,
+                                               String remoteIp) {
+        log.debug("getPublicEvents called with remoteIp={}", remoteIp);
+
+        // Отправляем хит для статистики
+        try {
+            statsClient.hit(Constants.APP_NAME, "/events", remoteIp, LocalDateTime.now());
+        } catch (Exception e) {
+            log.warn("Failed to send hit to stats-server", e);
+        }
+
         LocalDateTime start = rangeStart;
         LocalDateTime end = rangeEnd;
         if (start == null && end == null) {
@@ -218,6 +229,15 @@ public class EventService {
 
     @Transactional
     public EventFullDto getPublicEventById(Long id, String remoteIp) {
+        log.debug("getPublicEventById called with remoteIp={}", remoteIp);
+
+        // Отправляем хит для статистики
+        try {
+            statsClient.hit(Constants.APP_NAME, "/events/" + id, remoteIp, LocalDateTime.now());
+        } catch (Exception e) {
+            log.warn("Failed to send hit to stats-server", e);
+        }
+
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 

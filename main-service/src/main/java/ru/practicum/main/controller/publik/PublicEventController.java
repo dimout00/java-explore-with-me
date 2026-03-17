@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.main.dto.EventFullDto;
 import ru.practicum.main.dto.EventShortDto;
 import ru.practicum.main.service.EventService;
-import ru.practicum.main.util.Constants;
-import ru.practicum.stats.client.StatsClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +17,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PublicEventController {
     private final EventService eventService;
-    private final StatsClient statsClient;
 
     @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(required = false) String text,
@@ -35,15 +32,8 @@ public class PublicEventController {
         log.debug("GET /events: text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
-        // Отправляем хит для статистики
-        try {
-            statsClient.hit(Constants.APP_NAME, "/events", request.getRemoteAddr(), LocalDateTime.now());
-        } catch (Exception e) {
-            log.warn("Failed to send hit to stats-server", e);
-        }
-
-        List<EventShortDto> result = eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd,
-                onlyAvailable, sort, from, size);
+        List<EventShortDto> result = eventService.getPublicEvents(
+                text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request.getRemoteAddr());
         log.debug("GET /events returned {} events", result.size());
         return result;
     }
@@ -52,14 +42,6 @@ public class PublicEventController {
     public EventFullDto getEvent(@PathVariable Long id,
                                  HttpServletRequest request) {
         log.debug("GET /events/{}", id);
-
-        // Отправляем хит для статистики
-        try {
-            statsClient.hit(Constants.APP_NAME, "/events/" + id, request.getRemoteAddr(), LocalDateTime.now());
-        } catch (Exception e) {
-            log.warn("Failed to send hit to stats-server", e);
-        }
-
         EventFullDto result = eventService.getPublicEventById(id, request.getRemoteAddr());
         log.debug("GET /events/{} returned event: {}", id, result.getId());
         return result;

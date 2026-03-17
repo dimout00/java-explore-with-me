@@ -124,8 +124,7 @@ public class RequestService {
         List<ParticipationRequestDto> confirmed = new ArrayList<>();
         List<ParticipationRequestDto> rejected = new ArrayList<>();
 
-        if (update.getStatus().equals("CONFIRMED")) {
-            // Проверяем, достаточно ли мест для ВСЕХ запрашиваемых заявок
+        if (update.getStatus() == RequestStatus.CONFIRMED) {
             long availableSlots = limit - confirmedCount;
             if (requests.size() > availableSlots) {
                 throw new ConflictException("The participant limit has been reached: cannot confirm all requests");
@@ -134,13 +133,13 @@ public class RequestService {
                 r.setStatus(RequestStatus.CONFIRMED);
                 confirmed.add(RequestMapper.toParticipationRequestDto(r));
             }
-        } else if (update.getStatus().equals("REJECTED")) {
+        } else if (update.getStatus() == RequestStatus.REJECTED) {
             for (Request r : requests) {
                 r.setStatus(RequestStatus.REJECTED);
                 rejected.add(RequestMapper.toParticipationRequestDto(r));
             }
         } else {
-            throw new IllegalArgumentException("Unknown status: " + update.getStatus());
+            throw new IllegalArgumentException("Unsupported status for update: " + update.getStatus());
         }
 
         requestRepository.saveAll(requests);
