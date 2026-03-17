@@ -231,13 +231,6 @@ public class EventService {
             log.warn("Failed to send hit to stats-server", e);
         }
 
-        // Увеличенная задержка для гарантии сохранения хита в БД
-        try {
-            Thread.sleep(1000); // 1000 мс
-        } catch (InterruptedException ignored) {
-            ;
-        }
-
         return enrichEventFull(event);
     }
 

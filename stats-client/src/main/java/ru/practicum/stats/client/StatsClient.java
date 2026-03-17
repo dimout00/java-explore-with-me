@@ -60,13 +60,12 @@ public class StatsClient {
         }
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(serverUrl + "/stats")
-                .queryParam("start", start.format(FORMATTER))
-                .queryParam("end", end.format(FORMATTER));
+                .queryParam("start", start)
+                .queryParam("end", end);
 
         if (uris != null && !uris.isEmpty()) {
             builder.queryParam("uris", uris.toArray());
         }
-
         if (unique != null) {
             builder.queryParam("unique", unique);
         }
