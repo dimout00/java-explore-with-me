@@ -12,10 +12,7 @@ import ru.practicum.main.exception.NotFoundException;
 import ru.practicum.main.exception.ValidationException;
 import ru.practicum.main.mapper.EventMapper;
 import ru.practicum.main.model.*;
-import ru.practicum.main.repository.CategoryRepository;
-import ru.practicum.main.repository.EventRepository;
-import ru.practicum.main.repository.RequestRepository;
-import ru.practicum.main.repository.UserRepository;
+import ru.practicum.main.repository.*;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.ViewStats;
 
@@ -33,6 +30,7 @@ public class EventService {
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
+    private final EventViewRepository eventViewRepository;
 
     @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto dto) {
@@ -224,8 +222,18 @@ public class EventService {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
-        event.setViews(event.getViews() + 1);
-        eventRepository.save(event);
+        // Проверяем, был ли уже просмотр с этого IP
+        if (!eventViewRepository.existsByEventIdAndIp(id, remoteIp)) {
+            event.setViews(event.getViews() + 1);
+            eventRepository.save(event);
+
+            EventView view = EventView.builder()
+                    .event(event)
+                    .ip(remoteIp)
+                    .viewedAt(LocalDateTime.now())
+                    .build();
+            eventViewRepository.save(view);
+        }
 
         try {
             statsClient.hit("main-service", "/events/" + id, remoteIp, LocalDateTime.now());

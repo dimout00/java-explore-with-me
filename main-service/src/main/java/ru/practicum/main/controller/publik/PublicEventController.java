@@ -34,16 +34,7 @@ public class PublicEventController {
                                          HttpServletRequest request) {
         log.debug("GET /events: text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
-        try {
-            statsClient.hit(EndpointHit.builder()
-                    .app("ewm-main-service")
-                    .uri(request.getRequestURI())
-                    .ip(request.getRemoteAddr())
-                    .timestamp(LocalDateTime.now())
-                    .build());
-        } catch (Exception e) {
-            log.warn("Failed to send hit to stats-server", e);
-        }
+
         List<EventShortDto> result = eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd,
                 onlyAvailable, sort, from, size);
         log.debug("GET /events returned {} events", result.size());
