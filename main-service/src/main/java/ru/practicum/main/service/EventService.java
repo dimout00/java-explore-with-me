@@ -13,7 +13,6 @@ import ru.practicum.main.exception.ValidationException;
 import ru.practicum.main.mapper.EventMapper;
 import ru.practicum.main.model.*;
 import ru.practicum.main.repository.*;
-import ru.practicum.main.util.Constants;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.ViewStats;
 
