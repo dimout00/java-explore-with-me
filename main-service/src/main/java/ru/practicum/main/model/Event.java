@@ -61,7 +61,6 @@ public class Event {
     @Column(nullable = false, length = 120)
     private String title;
 
-    @Builder.Default
     @Column(name = "views", nullable = false)
     private Long views = 0L;
 }
