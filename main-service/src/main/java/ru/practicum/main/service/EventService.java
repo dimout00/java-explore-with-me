@@ -222,7 +222,7 @@ public class EventService {
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
         try {
-            statsClient.hit("main-service", "/events/" + id, remoteIp, LocalDateTime.now());
+            statsClient.hit("ewm-main-service", "/events/" + id, remoteIp, LocalDateTime.now());
         } catch (Exception e) {
             log.warn("Failed to send hit to stats-server", e);
         }
