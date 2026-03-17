@@ -223,10 +223,14 @@ public class EventService {
     public EventFullDto getPublicEventById(Long id, String remoteIp) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+
+        event.setViews(event.getViews() + 1);
+        eventRepository.save(event);
+
         try {
-            Thread.sleep(150);
-        } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
+            statsClient.hit("main-service", "/events/" + id, remoteIp, LocalDateTime.now());
+        } catch (Exception e) {
+            log.warn("Failed to send hit to stats-server", e);
         }
 
         return enrichEventFull(event);
@@ -347,7 +351,7 @@ public class EventService {
         log.debug("Enriching event id={}", event.getId());
         Long confirmedObj = requestRepository.countConfirmedRequestsByEventId(event.getId());
         long confirmedCount = confirmedObj != null ? confirmedObj : 0L;
-        Long views = getViews(List.of(event)).getOrDefault(event.getId(), 0L);
+        Long views = event.getViews(); // берём из поля
         log.debug("Event id={} confirmed={}, views={}", event.getId(), confirmedCount, views);
         return EventMapper.toEventFullDto(event, confirmedCount, views);
     }
