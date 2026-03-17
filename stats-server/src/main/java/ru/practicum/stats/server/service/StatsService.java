@@ -3,6 +3,7 @@ package ru.practicum.stats.server.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.stats.dto.EndpointHit;
 import ru.practicum.stats.dto.ViewStats;
 import ru.practicum.stats.server.model.HitEntity;
@@ -17,6 +18,7 @@ import java.util.List;
 public class StatsService {
     private final StatsRepository repository;
 
+    @Transactional
     public void saveHit(EndpointHit hit) {
         log.info("Saving hit: app={}, uri={}, ip={}, timestamp={}",
                 hit.getApp(), hit.getUri(), hit.getIp(), hit.getTimestamp());

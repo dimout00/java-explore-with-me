@@ -223,6 +223,11 @@ public class EventService {
     public EventFullDto getPublicEventById(Long id, String remoteIp) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+        try {
+            Thread.sleep(150);
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
 
         return enrichEventFull(event);
     }
@@ -295,7 +300,7 @@ public class EventService {
         log.debug("Requesting views for uris: {}, start: {}, end: {}", uris, start, end);
 
         try {
-            List<ViewStats> viewStats = statsClient.getStats(start, end, uris, false);
+            List<ViewStats> viewStats = statsClient.getStats(start, end, uris, true);
             log.debug("Received viewStats: {}", viewStats);
 
             Map<Long, Long> viewsMap = new HashMap<>();
