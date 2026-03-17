@@ -28,7 +28,6 @@ public class CompilationService {
     private final EventRepository eventRepository;
     private final EventService eventService;
 
-    // Публичные методы
     public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
         PageRequest page = PageRequest.of(from / size, size);
         List<Compilation> compilations;
@@ -48,7 +47,6 @@ public class CompilationService {
         return toCompilationDto(compilation);
     }
 
-    // Админские методы
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto dto) {
         List<Event> events = new ArrayList<>();

@@ -298,7 +298,7 @@ public class EventService {
         log.debug("Requesting views for uris: {}, start: {}, end: {}", uris, start, end);
 
         try {
-            List<ViewStats> viewStats = statsClient.getStats(start, end, uris, false);
+            List<ViewStats> viewStats = statsClient.getStats(start, end, uris, true);
             log.debug("Received viewStats: {}", viewStats);
 
             Map<Long, Long> viewsMap = new HashMap<>();
@@ -356,7 +356,7 @@ public class EventService {
                     LocalDateTime.now().minusYears(100),
                     LocalDateTime.now().plusYears(1),
                     List.of("/events/" + eventId),
-                    false
+                    true
             );
             return stats.isEmpty() ? 0L : stats.get(0).getHits();
         } catch (Exception e) {
