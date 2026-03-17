@@ -13,6 +13,7 @@ import ru.practicum.main.exception.ValidationException;
 import ru.practicum.main.mapper.EventMapper;
 import ru.practicum.main.model.*;
 import ru.practicum.main.repository.*;
+import ru.practicum.main.util.Constants;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.ViewStats;
 
@@ -222,7 +223,7 @@ public class EventService {
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
         try {
-            statsClient.hit("ewm-main-service", "/events/" + id, remoteIp, LocalDateTime.now());
+            statsClient.hit(Constants.APP_NAME, "/events/" + id, remoteIp, LocalDateTime.now());
         } catch (Exception e) {
             log.warn("Failed to send hit to stats-server", e);
         }

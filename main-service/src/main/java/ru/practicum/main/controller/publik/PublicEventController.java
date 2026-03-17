@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.main.dto.EventFullDto;
 import ru.practicum.main.dto.EventShortDto;
 import ru.practicum.main.service.EventService;
+import ru.practicum.main.util.Constants;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.EndpointHit;
 
@@ -42,12 +43,11 @@ public class PublicEventController {
     }
 
     @GetMapping("/{id}")
-    public EventFullDto getEvent(@PathVariable Long id,
-                                 HttpServletRequest request) {
+    public EventFullDto getEvent(@PathVariable Long id, HttpServletRequest request) {
         log.debug("GET /events/{}", id);
         try {
             statsClient.hit(EndpointHit.builder()
-                    .app("ewm-main-service")
+                    .app(Constants.APP_NAME)
                     .uri("/events/" + id)
                     .ip(request.getRemoteAddr())
                     .timestamp(LocalDateTime.now())

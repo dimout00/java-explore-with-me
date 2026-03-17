@@ -3,6 +3,7 @@ package ru.practicum.stats.server.handler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -32,6 +33,15 @@ public class ErrorHandler {
         log.error("Method argument type mismatch: {}", e.getMessage(), e);
         Map<String, String> error = new HashMap<>();
         error.put("error", "Failed to convert parameter '" + e.getName() + "' with value '" + e.getValue() + "'");
+        error.put("timestamp", LocalDateTime.now().format(FORMATTER));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Map<String, String>> handleMissingParams(MissingServletRequestParameterException e) {
+        log.error("Missing request parameter: {}", e.getMessage(), e);
+        Map<String, String> error = new HashMap<>();
+        error.put("error", e.getMessage());
         error.put("timestamp", LocalDateTime.now().format(FORMATTER));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
