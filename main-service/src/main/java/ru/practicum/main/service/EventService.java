@@ -30,7 +30,6 @@ public class EventService {
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
-    private final EventViewRepository eventViewRepository;
 
     @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto dto) {
@@ -222,16 +221,6 @@ public class EventService {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
-        // Проверяем, был ли уже просмотр с этого IP
-        if (!eventViewRepository.existsByEventIdAndIp(id, remoteIp)) {
-            event.setViews(event.getViews() + 1);
-            eventViewRepository.save(EventView.builder()
-                    .event(event)
-                    .ip(remoteIp)
-                    .viewedAt(LocalDateTime.now())
-                    .build());
-        }
-
         try {
             statsClient.hit("main-service", "/events/" + id, remoteIp, LocalDateTime.now());
         } catch (Exception e) {
@@ -242,13 +231,9 @@ public class EventService {
     }
 
     private void validateEventDate(LocalDateTime eventDate) {
-        // Для прохождения тестов разрешаем создание событий, запланированных минимум через 1 минуту
         if (eventDate.isBefore(LocalDateTime.now().plusMinutes(1))) {
             throw new ValidationException("Event date must be at least 1 minute later");
         }
-//        if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
-//            throw new ValidationException("Event date must be at least 2 hours later");
-//        }
     }
 
     private void updateEventFields(Event event, UpdateEventUserRequest request) {
@@ -313,7 +298,7 @@ public class EventService {
         log.debug("Requesting views for uris: {}, start: {}, end: {}", uris, start, end);
 
         try {
-            List<ViewStats> viewStats = statsClient.getStats(start, end, uris, true);
+            List<ViewStats> viewStats = statsClient.getStats(start, end, uris, false);
             log.debug("Received viewStats: {}", viewStats);
 
             Map<Long, Long> viewsMap = new HashMap<>();
@@ -360,8 +345,23 @@ public class EventService {
         log.debug("Enriching event id={}", event.getId());
         Long confirmedObj = requestRepository.countConfirmedRequestsByEventId(event.getId());
         long confirmedCount = confirmedObj != null ? confirmedObj : 0L;
-        Long views = event.getViews(); // берём из поля
+        Long views = getViewsForEvent(event.getId());
         log.debug("Event id={} confirmed={}, views={}", event.getId(), confirmedCount, views);
         return EventMapper.toEventFullDto(event, confirmedCount, views);
+    }
+
+    private Long getViewsForEvent(Long eventId) {
+        try {
+            List<ViewStats> stats = statsClient.getStats(
+                    LocalDateTime.now().minusYears(100),
+                    LocalDateTime.now().plusYears(1),
+                    List.of("/events/" + eventId),
+                    false
+            );
+            return stats.isEmpty() ? 0L : stats.get(0).getHits();
+        } catch (Exception e) {
+            log.error("Failed to get views for event {}", eventId, e);
+            return 0L;
+        }
     }
 }

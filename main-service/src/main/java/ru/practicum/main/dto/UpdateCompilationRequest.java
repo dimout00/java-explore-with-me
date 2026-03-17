@@ -1,5 +1,6 @@
 package ru.practicum.main.dto;
 
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,5 +15,7 @@ import java.util.List;
 public class UpdateCompilationRequest {
     private List<Long> events;
     private Boolean pinned;
-    private String title; // размер 1..50
+
+    @Size(min = 1, max = 50, message = "Title length must be between 1 and 50")
+    private String title;
 }
