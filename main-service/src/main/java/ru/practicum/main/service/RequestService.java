@@ -125,15 +125,14 @@ public class RequestService {
         List<ParticipationRequestDto> rejected = new ArrayList<>();
 
         if (update.getStatus().equals("CONFIRMED")) {
+            // Проверяем, достаточно ли мест для ВСЕХ запрашиваемых заявок
+            long availableSlots = limit - confirmedCount;
+            if (requests.size() > availableSlots) {
+                throw new ConflictException("The participant limit has been reached: cannot confirm all requests");
+            }
             for (Request r : requests) {
-                if (limit > 0 && confirmedCount >= limit) {
-                    r.setStatus(RequestStatus.REJECTED);
-                    rejected.add(RequestMapper.toParticipationRequestDto(r));
-                } else {
-                    r.setStatus(RequestStatus.CONFIRMED);
-                    confirmed.add(RequestMapper.toParticipationRequestDto(r));
-                    confirmedCount++;
-                }
+                r.setStatus(RequestStatus.CONFIRMED);
+                confirmed.add(RequestMapper.toParticipationRequestDto(r));
             }
         } else if (update.getStatus().equals("REJECTED")) {
             for (Request r : requests) {
