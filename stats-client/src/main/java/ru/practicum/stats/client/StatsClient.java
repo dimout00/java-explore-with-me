@@ -32,26 +32,46 @@ public class StatsClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<EndpointHit> entity = new HttpEntity<>(hit, headers);
         try {
-            rest.postForEntity(url, entity, Void.class);
+            ResponseEntity<Void> response = rest.postForEntity(url, entity, Void.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.debug("Hit sent successfully: {}", hit);
+            } else {
+                log.error("Failed to send hit, status: {}", response.getStatusCode());
+            }
         } catch (Exception e) {
-            log.error("Ошибка при сохранении статистики: {}", e.getMessage());
+            log.error("Ошибка при сохранении статистики: {}", e.getMessage(), e);
         }
     }
 
+    public void hit(String app, String uri, String ip, LocalDateTime timestamp) {
+        EndpointHit hit = EndpointHit.builder()
+                .app(app)
+                .uri(uri)
+                .ip(ip)
+                .timestamp(timestamp)
+                .build();
+        this.hit(hit);
+    }
+
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+        if (start == null || end == null) {
+            log.error("getStats called with null start or end: start={}, end={}", start, end);
+            return List.of();
+        }
+
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(serverUrl + "/stats")
-                .queryParam("start", start.format(FORMATTER))
-                .queryParam("end", end.format(FORMATTER));
+                .queryParam("start", start)
+                .queryParam("end", end);
 
         if (uris != null && !uris.isEmpty()) {
             builder.queryParam("uris", uris.toArray());
         }
-
         if (unique != null) {
             builder.queryParam("unique", unique);
         }
 
         String url = builder.encode().toUriString();
+        log.debug("Requesting stats from URL: {}", url);
 
         try {
             ResponseEntity<List<ViewStats>> response = rest.exchange(
@@ -60,9 +80,15 @@ public class StatsClient {
                     null,
                     new ParameterizedTypeReference<>() {}
             );
-            return response.getBody();
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.debug("Stats response: {}", response.getBody());
+                return response.getBody();
+            } else {
+                log.error("Failed to get stats, status: {}", response.getStatusCode());
+                return List.of();
+            }
         } catch (Exception e) {
-            log.error("Ошибка при получении статистики: {}", e.getMessage());
+            log.error("Ошибка при получении статистики: {}", e.getMessage(), e);
             return List.of();
         }
     }
