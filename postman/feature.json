@@ -9,7 +9,7 @@
       "name": "1. Подготовка данных",
       "item": [
         {
-          "name": "Создать пользователя (автор)",
+          "name": "Создать пользователя (автор №1)",
           "event": [
             {
               "listen": "test",
@@ -19,7 +19,7 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
                   "});",
                   "var jsonData = pm.response.json();",
-                  "pm.environment.set(\"userId\", jsonData.id);"
+                  "pm.environment.set(\"userId1\", jsonData.id);"
                 ],
                 "type": "text/javascript"
               }
@@ -35,7 +35,43 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Comment Author\",\n    \"email\": \"author@example.com\"\n}"
+              "raw": "{\n    \"name\": \"Comment Author 1\",\n    \"email\": \"author1@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Создать пользователя (автор №2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 201\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"userId2\", jsonData.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Comment Author 2\",\n    \"email\": \"author2@example.com\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/admin/users",
@@ -81,7 +117,7 @@
           }
         },
         {
-          "name": "Создать событие (инициатор = автор) - опубликованное",
+          "name": "Создать событие (автор №1) - опубликованное",
           "event": [
             {
               "listen": "test",
@@ -91,7 +127,7 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
                   "});",
                   "var jsonData = pm.response.json();",
-                  "pm.environment.set(\"eventId\", jsonData.id);"
+                  "pm.environment.set(\"publishedEventId\", jsonData.id);"
                 ],
                 "type": "text/javascript"
               }
@@ -107,12 +143,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"annotation\": \"Test event annotation\",\n    \"category\": {{catId}},\n    \"description\": \"Test description for event that is long enough to pass validation\",\n    \"eventDate\": \"2030-01-01 15:00:00\",\n    \"location\": {\n        \"lat\": 55.7558,\n        \"lon\": 37.6176\n    },\n    \"paid\": false,\n    \"participantLimit\": 0,\n    \"requestModeration\": true,\n    \"title\": \"Test Event Title\"\n}"
+              "raw": "{\n    \"annotation\": \"Test event annotation for positive tests\",\n    \"category\": {{catId}},\n    \"description\": \"Test description for event that is long enough to pass validation\",\n    \"eventDate\": \"2030-01-01 15:00:00\",\n    \"location\": {\n        \"lat\": 55.7558,\n        \"lon\": 37.6176\n    },\n    \"paid\": false,\n    \"participantLimit\": 0,\n    \"requestModeration\": true,\n    \"title\": \"Test Event Title\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}/events",
+              "raw": "{{baseUrl}}/users/{{userId1}}/events",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}", "events"]
+              "path": ["users", "{{userId1}}", "events"]
             }
           }
         },
@@ -144,14 +180,14 @@
               "raw": "{\n    \"stateAction\": \"PUBLISH_EVENT\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/admin/events/{{eventId}}",
+              "raw": "{{baseUrl}}/admin/events/{{publishedEventId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["admin", "events", "{{eventId}}"]
+              "path": ["admin", "events", "{{publishedEventId}}"]
             }
           }
         },
         {
-          "name": "Создать событие (неопубликованное) для негативного теста",
+          "name": "Создать неопубликованное событие (автор №1) для негативного теста",
           "event": [
             {
               "listen": "test",
@@ -177,22 +213,58 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"annotation\": \"Unpublished event\",\n    \"category\": {{catId}},\n    \"description\": \"This event will remain unpublished for conflict test\",\n    \"eventDate\": \"2030-02-01 20:00:00\",\n    \"location\": {\n        \"lat\": 55.7558,\n        \"lon\": 37.6176\n    },\n    \"paid\": false,\n    \"participantLimit\": 0,\n    \"requestModeration\": true,\n    \"title\": \"Unpublished Event\"\n}"
+              "raw": "{\n    \"annotation\": \"Unpublished event annotation with enough length\",\n    \"category\": {{catId}},\n    \"description\": \"This event will remain unpublished for conflict test\",\n    \"eventDate\": \"2030-02-01 20:00:00\",\n    \"location\": {\n        \"lat\": 55.7558,\n        \"lon\": 37.6176\n    },\n    \"paid\": false,\n    \"participantLimit\": 0,\n    \"requestModeration\": true,\n    \"title\": \"Unpublished Event\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}/events",
+              "raw": "{{baseUrl}}/users/{{userId1}}/events",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}", "events"]
+              "path": ["users", "{{userId1}}", "events"]
+            }
+          }
+        },
+        {
+          "name": "Создать комментарий от автора №2 (будет чужим для автора №1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"foreignCommentId\", jsonData.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"text\": \"Comment from user2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId2}}/events/{{publishedEventId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId2}}", "events", "{{publishedEventId}}", "comments"]
             }
           }
         }
       ]
     },
     {
-      "name": "2. Тесты комментариев",
+      "name": "2. Тесты комментариев (позитивные)",
       "item": [
         {
-          "name": "Добавить комментарий к опубликованному событию (успех)",
+          "name": "Добавить комментарий от автора №1 к опубликованному событию",
           "event": [
             {
               "listen": "test",
@@ -208,7 +280,7 @@
                   "    pm.expect(jsonData).to.have.property('author');",
                   "    pm.expect(jsonData).to.have.property('event');",
                   "    pm.expect(jsonData).to.have.property('createdOn');",
-                  "    pm.environment.set(\"commentId\", jsonData.id);",
+                  "    pm.environment.set(\"commentId1\", jsonData.id);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -228,9 +300,9 @@
               "raw": "{\n    \"text\": \"Great event!\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}/events/{{eventId}}/comments",
+              "raw": "{{baseUrl}}/users/{{userId1}}/events/{{publishedEventId}}/comments",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}", "events", "{{eventId}}", "comments"]
+              "path": ["users", "{{userId1}}", "events", "{{publishedEventId}}", "comments"]
             }
           }
         },
@@ -247,7 +319,7 @@
                   "pm.test(\"Response is array\", function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.be.an('array');",
-                  "    pm.expect(jsonData.length).to.be.at.least(1);",
+                  "    pm.expect(jsonData.length).to.be.at.least(2);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -258,9 +330,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/comments/events/{{eventId}}?from=0&size=10",
+              "raw": "{{baseUrl}}/comments/events/{{publishedEventId}}?from=0&size=10",
               "host": ["{{baseUrl}}"],
-              "path": ["comments", "events", "{{eventId}}"],
+              "path": ["comments", "events", "{{publishedEventId}}"],
               "query": [
                 {
                   "key": "from",
@@ -275,7 +347,7 @@
           }
         },
         {
-          "name": "Получить комментарий по ID",
+          "name": "Получить комментарий по ID (автора №1)",
           "event": [
             {
               "listen": "test",
@@ -286,7 +358,7 @@
                   "});",
                   "pm.test(\"Response matches created comment\", function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.equal(parseInt(pm.environment.get('commentId')));",
+                  "    pm.expect(jsonData.id).to.equal(parseInt(pm.environment.get('commentId1')));",
                   "    pm.expect(jsonData.text).to.equal('Great event!');",
                   "});"
                 ],
@@ -298,14 +370,14 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/comments/{{commentId}}",
+              "raw": "{{baseUrl}}/comments/{{commentId1}}",
               "host": ["{{baseUrl}}"],
-              "path": ["comments", "{{commentId}}"]
+              "path": ["comments", "{{commentId1}}"]
             }
           }
         },
         {
-          "name": "Обновить комментарий (автор)",
+          "name": "Обновить комментарий (автор №1)",
           "event": [
             {
               "listen": "test",
@@ -337,14 +409,14 @@
               "raw": "{\n    \"text\": \"Updated comment text\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}/comments/{{commentId}}",
+              "raw": "{{baseUrl}}/users/{{userId1}}/comments/{{commentId1}}",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}", "comments", "{{commentId}}"]
+              "path": ["users", "{{userId1}}", "comments", "{{commentId1}}"]
             }
           }
         },
         {
-          "name": "Удалить комментарий (автор)",
+          "name": "Удалить комментарий (автор №1)",
           "event": [
             {
               "listen": "test",
@@ -362,50 +434,14 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}/comments/{{commentId}}",
+              "raw": "{{baseUrl}}/users/{{userId1}}/comments/{{commentId1}}",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}", "comments", "{{commentId}}"]
+              "path": ["users", "{{userId1}}", "comments", "{{commentId1}}"]
             }
           }
         },
         {
-          "name": "Добавить ещё один комментарий (для админ. удаления)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.expect(pm.response.code).to.equal(201);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "pm.environment.set(\"adminCommentId\", jsonData.id);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"text\": \"Comment to be deleted by admin\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}/events/{{eventId}}/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}", "events", "{{eventId}}", "comments"]
-            }
-          }
-        },
-        {
-          "name": "Админ удаляет комментарий",
+          "name": "Админ удаляет комментарий автора №2",
           "event": [
             {
               "listen": "test",
@@ -423,9 +459,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/admin/comments/{{adminCommentId}}",
+              "raw": "{{baseUrl}}/admin/comments/{{foreignCommentId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["admin", "comments", "{{adminCommentId}}"]
+              "path": ["admin", "comments", "{{foreignCommentId}}"]
             }
           }
         }
@@ -435,7 +471,7 @@
       "name": "3. Негативные сценарии",
       "item": [
         {
-          "name": "Добавить комментарий к неопубликованному событию (должен быть 409)",
+          "name": "Добавить комментарий к неопубликованному событию → 409 Conflict",
           "event": [
             {
               "listen": "test",
@@ -462,14 +498,14 @@
               "raw": "{\n    \"text\": \"Try to comment unpublished event\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}/events/{{unpublishedEventId}}/comments",
+              "raw": "{{baseUrl}}/users/{{userId1}}/events/{{unpublishedEventId}}/comments",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}", "events", "{{unpublishedEventId}}", "comments"]
+              "path": ["users", "{{userId1}}", "events", "{{unpublishedEventId}}", "comments"]
             }
           }
         },
         {
-          "name": "Обновить чужой комментарий (должен быть 409)",
+          "name": "Обновить чужой комментарий (автор №1 пытается обновить комментарий автора №2) → 409 Conflict",
           "event": [
             {
               "listen": "test",
@@ -496,9 +532,9 @@
               "raw": "{\n    \"text\": \"Hack attempt\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users/999/comments/{{commentId}}",
+              "raw": "{{baseUrl}}/users/{{userId1}}/comments/{{foreignCommentId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "999", "comments", "{{commentId}}"]
+              "path": ["users", "{{userId1}}", "comments", "{{foreignCommentId}}"]
             }
           }
         }
