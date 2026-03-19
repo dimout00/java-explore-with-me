@@ -81,7 +81,7 @@
           }
         },
         {
-          "name": "Создать событие (инициатор = автор)",
+          "name": "Создать событие (инициатор = автор) - опубликованное",
           "event": [
             {
               "listen": "test",
@@ -107,7 +107,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"annotation\": \"Test event annotation\",\n    \"category\": {{catId}},\n    \"description\": \"Test description\",\n    \"eventDate\": \"2030-01-01 15:00:00\",\n    \"location\": {\n        \"lat\": 55.7558,\n        \"lon\": 37.6176\n    },\n    \"paid\": false,\n    \"participantLimit\": 0,\n    \"requestModeration\": true,\n    \"title\": \"Test Event Title\"\n}"
+              "raw": "{\n    \"annotation\": \"Test event annotation\",\n    \"category\": {{catId}},\n    \"description\": \"Test description for event that is long enough to pass validation\",\n    \"eventDate\": \"2030-01-01 15:00:00\",\n    \"location\": {\n        \"lat\": 55.7558,\n        \"lon\": 37.6176\n    },\n    \"paid\": false,\n    \"participantLimit\": 0,\n    \"requestModeration\": true,\n    \"title\": \"Test Event Title\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/users/{{userId}}/events",
@@ -149,6 +149,42 @@
               "path": ["admin", "events", "{{eventId}}"]
             }
           }
+        },
+        {
+          "name": "Создать событие (неопубликованное) для негативного теста",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 201\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"unpublishedEventId\", jsonData.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"annotation\": \"Unpublished event\",\n    \"category\": {{catId}},\n    \"description\": \"This event will remain unpublished for conflict test\",\n    \"eventDate\": \"2030-02-01 20:00:00\",\n    \"location\": {\n        \"lat\": 55.7558,\n        \"lon\": 37.6176\n    },\n    \"paid\": false,\n    \"participantLimit\": 0,\n    \"requestModeration\": true,\n    \"title\": \"Unpublished Event\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}", "events"]
+            }
+          }
         }
       ]
     },
@@ -156,7 +192,7 @@
       "name": "2. Тесты комментариев",
       "item": [
         {
-          "name": "Добавить комментарий к событию (успех)",
+          "name": "Добавить комментарий к опубликованному событию (успех)",
           "event": [
             {
               "listen": "test",
@@ -399,7 +435,7 @@
       "name": "3. Негативные сценарии",
       "item": [
         {
-          "name": "Добавить комментарий к неопубликованному событию",
+          "name": "Добавить комментарий к неопубликованному событию (должен быть 409)",
           "event": [
             {
               "listen": "test",
@@ -423,17 +459,17 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"text\": \"This should fail\"\n}"
+              "raw": "{\n    \"text\": \"Try to comment unpublished event\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}/events/999999/comments",
+              "raw": "{{baseUrl}}/users/{{userId}}/events/{{unpublishedEventId}}/comments",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}", "events", "999999", "comments"]
+              "path": ["users", "{{userId}}", "events", "{{unpublishedEventId}}", "comments"]
             }
           }
         },
         {
-          "name": "Обновить чужой комментарий",
+          "name": "Обновить чужой комментарий (должен быть 409)",
           "event": [
             {
               "listen": "test",
