@@ -3,6 +3,7 @@ package ru.practicum.main.mapper.comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import ru.practicum.main.dto.comment.CommentAuthorDto;
 import ru.practicum.main.dto.comment.CommentDto;
 import ru.practicum.main.dto.comment.CommentEventDto;
@@ -20,8 +21,11 @@ public interface CommentMapper {
     @Mapping(target = "editedOn", ignore = true)
     Comment toEntity(NewCommentDto dto);
 
+    @Mapping(target = "author", source = "author", qualifiedByName = "toAuthorDto")
+    @Mapping(target = "event", source = "event", qualifiedByName = "toEventDto")
     CommentDto toDto(Comment comment);
 
+    @Named("toAuthorDto")
     default CommentAuthorDto toAuthorDto(User user) {
         if (user == null) return null;
         return CommentAuthorDto.builder()
@@ -30,6 +34,7 @@ public interface CommentMapper {
                 .build();
     }
 
+    @Named("toEventDto")
     default CommentEventDto toEventDto(Event event) {
         if (event == null) return null;
         return CommentEventDto.builder()
