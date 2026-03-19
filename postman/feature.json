@@ -223,7 +223,43 @@
           }
         },
         {
-          "name": "Создать комментарий от автора №2 (будет чужим для автора №1)",
+          "name": "Создать комментарий от автора №2 (будет удалён админом)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"commentToDeleteByAdmin\", jsonData.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"text\": \"Comment from user2 (to be deleted)\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId2}}/events/{{publishedEventId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId2}}", "events", "{{publishedEventId}}", "comments"]
+            }
+          }
+        },
+        {
+          "name": "Создать ещё один комментарий от автора №2 (для негативного теста на обновление чужим)",
           "event": [
             {
               "listen": "test",
@@ -249,12 +285,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"text\": \"Comment from user2\"\n}"
+              "raw": "{\n    \"text\": \"Comment from user2 (for conflict test)\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/users/{{userId2}}/events/{{publishedEventId}}/comments",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId2}}", "events", "{{publishedEventId}}", "comments"]
+              "path": ["users", "userId2", "events", "{{publishedEventId}}", "comments"]
             }
           }
         }
@@ -319,7 +355,7 @@
                   "pm.test(\"Response is array\", function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.be.an('array');",
-                  "    pm.expect(jsonData.length).to.be.at.least(2);",
+                  "    pm.expect(jsonData.length).to.be.at.least(3);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -441,7 +477,7 @@
           }
         },
         {
-          "name": "Админ удаляет комментарий автора №2",
+          "name": "Админ удаляет комментарий автора №2 (первый)",
           "event": [
             {
               "listen": "test",
@@ -459,9 +495,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/admin/comments/{{foreignCommentId}}",
+              "raw": "{{baseUrl}}/admin/comments/{{commentToDeleteByAdmin}}",
               "host": ["{{baseUrl}}"],
-              "path": ["admin", "comments", "{{foreignCommentId}}"]
+              "path": ["admin", "comments", "{{commentToDeleteByAdmin}}"]
             }
           }
         }
