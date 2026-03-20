@@ -290,7 +290,7 @@
             "url": {
               "raw": "{{baseUrl}}/users/{{userId2}}/events/{{publishedEventId}}/comments",
               "host": ["{{baseUrl}}"],
-              "path": ["users", "userId2", "events", "{{publishedEventId}}", "comments"]
+              "path": ["users", "{{userId2}}", "events", "{{publishedEventId}}", "comments"]
             }
           }
         }
@@ -352,7 +352,7 @@
                   "pm.test(\"Status code is 200\", function () {",
                   "    pm.expect(pm.response.code).to.equal(200);",
                   "});",
-                  "pm.test(\"Response is array\", function () {",
+                  "pm.test(\"Response is array with at least 3 comments\", function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.be.an('array');",
                   "    pm.expect(jsonData.length).to.be.at.least(3);",
