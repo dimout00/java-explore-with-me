@@ -63,6 +63,7 @@ public class CommentService {
         commentMapper.updateEntity(dto, comment);
         comment.setEditedOn(LocalDateTime.now());
         Comment updated = commentRepository.save(comment);
+        log.info("Comment updated with id: {}", updated.getId());
         return commentMapper.toDto(updated);
     }
 
@@ -75,7 +76,7 @@ public class CommentService {
             throw new ConflictException("User is not the author of this comment");
         }
         commentRepository.delete(comment);
-        log.info("Comment deleted: {}", commentId);
+        log.info("Comment deleted by user {}: {}", userId, commentId);
     }
 
     @Transactional
@@ -111,8 +112,9 @@ public class CommentService {
     }
 
     public CommentDto getCommentById(Long commentId) {
-        Comment comment = commentRepository.findById(commentId)
+        log.debug("Getting comment by id: {}", commentId);
+        return commentRepository.findById(commentId)
+                .map(commentMapper::toDto)
                 .orElseThrow(() -> new NotFoundException("Comment not found with id: " + commentId));
-        return commentMapper.toDto(comment);
     }
 }
